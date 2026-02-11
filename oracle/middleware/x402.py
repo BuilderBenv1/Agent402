@@ -136,10 +136,48 @@ def setup_x402_middleware(app: FastAPI, settings: Settings) -> None:
         "GET /api/v1/trust/*": RouteConfig(
             accepts=[_option(settings.x402_price_eval)],
             description="Trust evaluation and risk assessment for an AI agent",
+            mime_type="application/json",
+            extensions={
+                "bazaar": {
+                    "info": {
+                        "output": {
+                            "type": "json",
+                            "example": {
+                                "agent_id": 42,
+                                "composite_score": 87.3,
+                                "tier": "platinum",
+                                "recommendation": "TRUSTED",
+                                "risk_flags": [],
+                                "feedback_count": 156,
+                            },
+                        },
+                    },
+                },
+            },
         ),
         "GET /api/v1/agents/trusted": RouteConfig(
             accepts=[_option(settings.x402_price_search)],
             description="Search for trusted agents by category, score, tier",
+            mime_type="application/json",
+            extensions={
+                "bazaar": {
+                    "info": {
+                        "output": {
+                            "type": "json",
+                            "example": [
+                                {
+                                    "agent_id": 42,
+                                    "name": "DeFi Agent",
+                                    "composite_score": 87.3,
+                                    "tier": "platinum",
+                                    "category": "defi",
+                                    "feedback_count": 156,
+                                },
+                            ],
+                        },
+                    },
+                },
+            },
         ),
     }
 
