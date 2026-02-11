@@ -10,11 +10,15 @@ class Settings(BaseSettings):
 
     # x402 Payment Protocol
     x402_pay_to: str = ""  # Wallet address to receive USDC payments
-    x402_network: str = "eip155:84532"  # Base Sepolia (prod: eip155:8453)
-    x402_facilitator_url: str = "https://x402.org/facilitator"
+    x402_network: str = "eip155:8453"  # Base Mainnet
+    x402_facilitator_url: str = "https://api.cdp.coinbase.com/platform/v2/x402"
     x402_price_eval: str = "$0.01"  # Trust evaluation
     x402_price_search: str = "$0.01"  # Agent search
     x402_price_stats: str = "$0.005"  # Network stats
+
+    # CDP API credentials (required for mainnet facilitator)
+    cdp_api_key_id: str = ""
+    cdp_api_key_secret: str = ""
 
     # Wallet for on-chain operations (signing, self-registration)
     private_key: str = Field(

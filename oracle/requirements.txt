@@ -7,3 +7,4 @@ python-dotenv>=1.0.0
 httpx>=0.26.0
 x402[fastapi,evm]>=2.0.0
 eth-account>=0.13.0
+cdp-sdk>=1.39.0

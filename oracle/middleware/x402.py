@@ -13,6 +13,7 @@ from starlette.requests import Request
 from starlette.responses import Response
 
 from x402.http import FacilitatorConfig, HTTPFacilitatorClient, PaymentOption
+from x402.http.facilitator_client_base import AuthHeaders, AuthProvider
 from x402.http.middleware.fastapi import PaymentMiddlewareASGI
 from x402.http.types import RouteConfig
 from x402.mechanisms.evm.exact import ExactEvmServerScheme
@@ -66,6 +67,34 @@ class PaymentLoggingMiddleware(BaseHTTPMiddleware):
         return response
 
 
+class CdpAuthProvider:
+    """AuthProvider that generates CDP JWT headers for the mainnet facilitator."""
+
+    def __init__(self, api_key_id: str, api_key_secret: str) -> None:
+        self._api_key_id = api_key_id
+        self._api_key_secret = api_key_secret
+
+    def _headers_for(self, method: str, path: str) -> dict[str, str]:
+        from cdp.auth import get_auth_headers, GetAuthHeadersOptions
+
+        return get_auth_headers(
+            GetAuthHeadersOptions(
+                api_key_id=self._api_key_id,
+                api_key_secret=self._api_key_secret,
+                request_method=method,
+                request_host="api.cdp.coinbase.com",
+                request_path=path,
+            )
+        )
+
+    def get_auth_headers(self) -> AuthHeaders:
+        return AuthHeaders(
+            verify=self._headers_for("POST", "/platform/v2/x402/verify"),
+            settle=self._headers_for("POST", "/platform/v2/x402/settle"),
+            supported=self._headers_for("GET", "/platform/v2/x402/supported"),
+        )
+
+
 def setup_x402_middleware(app: FastAPI, settings: Settings) -> None:
     """Register x402 payment middleware on premium endpoints."""
 
@@ -73,8 +102,24 @@ def setup_x402_middleware(app: FastAPI, settings: Settings) -> None:
         logger.warning("X402_PAY_TO not set — cannot enable x402 payments")
         return
 
+    # Build auth provider for CDP mainnet facilitator
+    auth_provider = None
+    if settings.cdp_api_key_id and settings.cdp_api_key_secret:
+        auth_provider = CdpAuthProvider(
+            settings.cdp_api_key_id, settings.cdp_api_key_secret
+        )
+        logger.info("CDP API key configured for mainnet facilitator")
+    else:
+        logger.warning(
+            "CDP_API_KEY_ID / CDP_API_KEY_SECRET not set — "
+            "facilitator auth disabled (required for mainnet)"
+        )
+
     facilitator = HTTPFacilitatorClient(
-        FacilitatorConfig(url=settings.x402_facilitator_url)
+        FacilitatorConfig(
+            url=settings.x402_facilitator_url,
+            auth_provider=auth_provider,
+        )
     )
     server = x402ResourceServer(facilitator)
     server.register(settings.x402_network, ExactEvmServerScheme())
