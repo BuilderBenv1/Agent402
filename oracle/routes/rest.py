@@ -13,10 +13,10 @@ router = APIRouter(prefix="/api/v1", tags=["trust"])
 
 
 @router.get("/trust/{agent_id}", response_model=TrustEvaluation)
-async def evaluate_agent(agent_id: int):
+async def evaluate_agent(agent_id: int, chain: str | None = Query(None)):
     """Full trust evaluation — score, tier, risk flags, breakdown. [x402: $0.01]"""
     try:
-        result = await asyncio.to_thread(get_trust_service().evaluate_agent, agent_id)
+        result = await asyncio.to_thread(get_trust_service().evaluate_agent, agent_id, chain=chain)
         return result
     except ValueError as e:
         raise HTTPException(status_code=404, detail=str(e))
@@ -26,10 +26,10 @@ async def evaluate_agent(agent_id: int):
 
 
 @router.get("/trust/{agent_id}/risk", response_model=RiskAssessment)
-async def risk_check(agent_id: int):
+async def risk_check(agent_id: int, chain: str | None = Query(None)):
     """Risk assessment with flags and recommendation. [x402: $0.01]"""
     try:
-        result = await asyncio.to_thread(get_trust_service().risk_check, agent_id)
+        result = await asyncio.to_thread(get_trust_service().risk_check, agent_id, chain=chain)
         return result
     except ValueError as e:
         raise HTTPException(status_code=404, detail=str(e))
@@ -44,6 +44,7 @@ async def find_trusted_agents(
     min_score: float = Query(0, ge=0, le=100),
     min_feedback: int = Query(0, ge=0),
     tier: str | None = Query(None),
+    chain: str | None = Query(None),
     limit: int = Query(20, ge=1, le=100),
 ):
     """Search trusted agents by category, score, and tier. [x402: $0.01]"""
@@ -54,6 +55,7 @@ async def find_trusted_agents(
             min_score=min_score,
             min_feedback=min_feedback,
             tier=tier,
+            chain=chain,
             limit=limit,
         )
         return result
@@ -63,10 +65,10 @@ async def find_trusted_agents(
 
 
 @router.get("/network/stats", response_model=NetworkStats)
-async def network_stats():
+async def network_stats(chain: str | None = Query(None)):
     """Network-wide statistics (free)."""
     try:
-        result = await asyncio.to_thread(get_trust_service().network_stats)
+        result = await asyncio.to_thread(get_trust_service().network_stats, chain=chain)
         return result
     except Exception as e:
         logger.error(f"network_stats failed: {e}")
@@ -76,6 +78,7 @@ async def network_stats():
 @router.get("/agents/top", response_model=list[TrustedAgent])
 async def top_agents(
     category: str | None = Query(None),
+    chain: str | None = Query(None),
     limit: int = Query(50, ge=1, le=100),
 ):
     """Top agents by score — free, for website leaderboard."""
@@ -86,6 +89,7 @@ async def top_agents(
             min_score=0,
             min_feedback=0,
             tier=None,
+            chain=chain,
             limit=limit,
         )
         return result

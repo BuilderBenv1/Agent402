@@ -9,6 +9,7 @@ CREATE TABLE IF NOT EXISTS agents (
     agent_id INTEGER UNIQUE NOT NULL,
     owner_address TEXT NOT NULL,
     agent_uri TEXT NOT NULL,
+    chain TEXT NOT NULL DEFAULT 'avalanche',
     name TEXT,
     description TEXT,
     category TEXT DEFAULT 'general',
@@ -31,6 +32,7 @@ CREATE INDEX IF NOT EXISTS idx_agents_agent_id ON agents(agent_id);
 CREATE INDEX IF NOT EXISTS idx_agents_composite_score ON agents(composite_score DESC);
 CREATE INDEX IF NOT EXISTS idx_agents_category ON agents(category);
 CREATE INDEX IF NOT EXISTS idx_agents_tier ON agents(tier);
+CREATE INDEX IF NOT EXISTS idx_agents_chain ON agents(chain);
 
 -- 2. Reputation events (feedback)
 CREATE TABLE IF NOT EXISTS reputation_events (

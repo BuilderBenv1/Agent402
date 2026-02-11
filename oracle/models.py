@@ -45,6 +45,7 @@ class ScoreBreakdown(BaseModel):
 
 class TrustEvaluation(BaseModel):
     agent_id: int
+    chain: str = "avalanche"
     name: str | None = None
     composite_score: float
     tier: str
@@ -61,6 +62,7 @@ class TrustEvaluation(BaseModel):
 
 class TrustedAgent(BaseModel):
     agent_id: int
+    chain: str = "avalanche"
     name: str | None = None
     composite_score: float
     tier: str
@@ -70,6 +72,7 @@ class TrustedAgent(BaseModel):
 
 class RiskAssessment(BaseModel):
     agent_id: int
+    chain: str = "avalanche"
     recommendation: Recommendation
     risk_flags: list[RiskFlag] = []
     risk_level: RiskLevel
@@ -82,6 +85,7 @@ class NetworkStats(BaseModel):
     tier_distribution: dict[str, int] = {}
     category_counts: dict[str, int] = {}
     protocol_counts: dict[str, int] = {}
+    chain_distribution: dict[str, int] = {}
     total_feedback: int = 0
     total_screenings: int = 0
     total_payments: int = 0

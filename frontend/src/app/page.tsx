@@ -245,6 +245,41 @@ export default function Home() {
         </section>
       )}
 
+      {/* Chain Distribution */}
+      {stats?.chain_distribution && Object.keys(stats.chain_distribution).length > 0 && (
+        <section className="mb-16">
+          <h2 className="font-sans text-lg font-bold text-white mb-4 text-center uppercase tracking-wider">
+            Chain Coverage
+          </h2>
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+            {[
+              { key: "avalanche", label: "Avalanche", color: "text-red-400", bg: "bg-red-500" },
+              { key: "ethereum", label: "Ethereum", color: "text-blue-400", bg: "bg-blue-500" },
+              { key: "base", label: "Base", color: "text-blue-300", bg: "bg-blue-400" },
+              { key: "solana", label: "Solana", color: "text-purple-400", bg: "bg-purple-500" },
+            ].map(({ key, label, color, bg }) => {
+              const count = stats.chain_distribution[key] || 0;
+              const pct = stats.total_agents > 0 ? ((count / stats.total_agents) * 100).toFixed(1) : "0";
+              return (
+                <div key={key} className="bg-surface border border-surface-2 rounded-lg p-4 text-center">
+                  <div className={`text-xl font-bold ${color}`}>
+                    {count.toLocaleString()}
+                  </div>
+                  <div className="text-xs text-muted-2 mt-1 uppercase tracking-wider">{label}</div>
+                  <div className="mt-2 w-full bg-surface-2 rounded-full h-1.5">
+                    <div
+                      className={`h-1.5 rounded-full ${bg}`}
+                      style={{ width: `${Math.min(100, parseFloat(pct))}%` }}
+                    />
+                  </div>
+                  <div className="text-[10px] text-muted-3 mt-1">{pct}% of agents</div>
+                </div>
+              );
+            })}
+          </div>
+        </section>
+      )}
+
       {/* How It Works */}
       <section className="mb-16">
         <h2 className="font-sans text-2xl font-bold text-white mb-8 text-center">

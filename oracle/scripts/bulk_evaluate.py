@@ -129,8 +129,17 @@ def determine_tier(score: float, feedback: int) -> str:
 
 
 def main():
+    import time
+
+    start_from = int(sys.argv[1]) if len(sys.argv) > 1 else 0
+    chain_filter = sys.argv[2] if len(sys.argv) > 2 else None
+
     logger.info("=" * 60)
     logger.info("Agent402 Bulk Evaluation Cycle")
+    if start_from:
+        logger.info(f"Resuming from agent_id >= {start_from}")
+    if chain_filter:
+        logger.info(f"Filtering chain: {chain_filter}")
     logger.info("=" * 60)
 
     db = get_db()
@@ -190,13 +199,16 @@ def main():
 
     offset = 0
     while True:
-        batch = (
+        query = (
             db.table("agents")
             .select("agent_id, owner_address, agent_uri, name, description, category, registered_at, total_feedback, average_rating, composite_score, tier")
             .order("agent_id")
-            .range(offset, offset + PAGE - 1)
-            .execute()
         )
+        if start_from > 0:
+            query = query.gte("agent_id", start_from)
+        if chain_filter:
+            query = query.eq("chain", chain_filter)
+        batch = query.range(offset, offset + PAGE - 1).execute()
         if not batch.data:
             break
 
@@ -267,11 +279,21 @@ def main():
                 "validation_success_rate": round(success_rate, 2),
                 "updated_at": now.isoformat(),
             }
-            db.table("agents").update(update_data).eq("agent_id", aid).execute()
+            for attempt in range(3):
+                try:
+                    db.table("agents").update(update_data).eq("agent_id", aid).execute()
+                    break
+                except Exception as e:
+                    if attempt < 2:
+                        logger.warning(f"  Retry agent {aid} (attempt {attempt+2}): {e}")
+                        time.sleep(1)
+                        db = get_db()  # refresh connection
+                    else:
+                        logger.error(f"  Failed agent {aid} after 3 attempts: {e}")
             total_processed += 1
 
             if total_processed % 500 == 0:
-                logger.info(f"  Updated {total_processed} agents...")
+                logger.info(f"  Updated {total_processed} agents (last: #{aid})...")
 
         if len(batch.data) < PAGE:
             break

@@ -113,6 +113,7 @@ def sync_agents(src: Client, dst: Client) -> int:
             "validation_success_rate": float(r.get("validation_success_rate") or 0),
             "rank": r.get("rank"),
             "tier": r.get("tier", "unranked"),
+            "chain": "avalanche",
         })
 
     count = upsert_batch(dst, "agents", clean, "agent_id")

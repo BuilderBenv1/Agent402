@@ -164,10 +164,13 @@ def _determine_risk_level(risk_flags: list[RiskFlag]) -> RiskLevel:
 
 
 class TrustService:
-    def evaluate_agent(self, agent_id: int) -> TrustEvaluation:
+    def evaluate_agent(self, agent_id: int, chain: str | None = None) -> TrustEvaluation:
         db = get_supabase()
 
-        result = db.table("agents").select("*").eq("agent_id", agent_id).execute()
+        query = db.table("agents").select("*").eq("agent_id", agent_id)
+        if chain:
+            query = query.eq("chain", chain)
+        result = query.execute()
         if not result.data:
             raise ValueError(f"Agent #{agent_id} not found")
         agent = result.data[0]
@@ -257,6 +260,7 @@ class TrustService:
 
         return TrustEvaluation(
             agent_id=agent_id,
+            chain=agent.get("chain", "avalanche"),
             name=agent.get("name"),
             composite_score=composite,
             tier=tier,
@@ -277,13 +281,16 @@ class TrustService:
         min_score: float = 0,
         min_feedback: int = 0,
         tier: str | None = None,
+        chain: str | None = None,
         limit: int = 20,
     ) -> list[TrustedAgent]:
         db = get_supabase()
         query = db.table("agents").select(
-            "agent_id, name, composite_score, tier, category, total_feedback"
+            "agent_id, chain, name, composite_score, tier, category, total_feedback"
         )
 
+        if chain:
+            query = query.eq("chain", chain)
         if category:
             query = query.eq("category", category)
         if tier:
@@ -299,6 +306,7 @@ class TrustService:
         return [
             TrustedAgent(
                 agent_id=a["agent_id"],
+                chain=a.get("chain", "avalanche"),
                 name=a.get("name"),
                 composite_score=float(a.get("composite_score") or 0),
                 tier=a.get("tier", "unranked"),
@@ -308,8 +316,8 @@ class TrustService:
             for a in result.data
         ]
 
-    def risk_check(self, agent_id: int) -> RiskAssessment:
-        evaluation = self.evaluate_agent(agent_id)
+    def risk_check(self, agent_id: int, chain: str | None = None) -> RiskAssessment:
+        evaluation = self.evaluate_agent(agent_id, chain=chain)
         risk_flags = list(evaluation.risk_flags)
 
         # Score volatility from history
@@ -353,36 +361,34 @@ class TrustService:
 
         return RiskAssessment(
             agent_id=agent_id,
+            chain=evaluation.chain,
             recommendation=recommendation,
             risk_flags=risk_flags,
             risk_level=risk_level,
             details=". ".join(details_parts) if details_parts else "No risk flags",
         )
 
-    def network_stats(self) -> NetworkStats:
+    def network_stats(self, chain: str | None = None) -> NetworkStats:
         db = get_supabase()
 
-        count_result = (
-            db.table("agents")
-            .select("agent_id", count="exact")
-            .limit(0)
-            .execute()
-        )
+        count_query = db.table("agents").select("agent_id", count="exact")
+        if chain:
+            count_query = count_query.eq("chain", chain)
+        count_result = count_query.limit(0).execute()
         total_agents = count_result.count or 0
 
         all_scores: list[float] = []
         tier_dist: dict[str, int] = {}
         cat_counts: dict[str, int] = {}
         proto_counts: dict[str, int] = {}
+        chain_dist: dict[str, int] = {}
         page_size = 1000
         offset = 0
         while True:
-            batch = (
-                db.table("agents")
-                .select("composite_score, tier, category, agent_uri")
-                .range(offset, offset + page_size - 1)
-                .execute()
-            )
+            q = db.table("agents").select("composite_score, tier, category, agent_uri, chain")
+            if chain:
+                q = q.eq("chain", chain)
+            batch = q.range(offset, offset + page_size - 1).execute()
             if not batch.data:
                 break
             for a in batch.data:
@@ -392,6 +398,8 @@ class TrustService:
                 tier_dist[t] = tier_dist.get(t, 0) + 1
                 cat = a.get("category") or "general"
                 cat_counts[cat] = cat_counts.get(cat, 0) + 1
+                c = a.get("chain", "avalanche")
+                chain_dist[c] = chain_dist.get(c, 0) + 1
                 # Count protocols from base64 metadata
                 proto_counts["https"] = proto_counts.get("https", 0) + 1
                 uri = a.get("agent_uri") or ""
@@ -438,6 +446,7 @@ class TrustService:
             tier_distribution=tier_dist,
             category_counts=cat_counts,
             protocol_counts=proto_counts,
+            chain_distribution=chain_dist,
             total_feedback=total_feedback,
             total_screenings=total_screenings,
             total_payments=total_payments,

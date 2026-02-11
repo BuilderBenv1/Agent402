@@ -12,6 +12,7 @@ export interface NetworkStats {
   tier_distribution: Record<string, number>;
   category_counts: Record<string, number>;
   protocol_counts: Record<string, number>;
+  chain_distribution: Record<string, number>;
   total_feedback: number;
   total_screenings: number;
   total_payments: number;
@@ -19,6 +20,7 @@ export interface NetworkStats {
 
 export interface TrustEvaluation {
   agent_id: number;
+  chain: string;
   name: string | null;
   composite_score: number;
   tier: string;
@@ -42,6 +44,7 @@ export interface TrustEvaluation {
 
 export interface TrustedAgent {
   agent_id: number;
+  chain: string;
   name: string | null;
   composite_score: number;
   tier: string;

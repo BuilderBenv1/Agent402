@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Trophy, ArrowUpRight, Filter } from "lucide-react";
+import { Trophy, ArrowUpRight, Filter, Globe } from "lucide-react";
 import type { TrustedAgent, NetworkStats } from "@/lib/api";
 import { getScoreColor, getTierColor, TIER_ORDER } from "@/lib/constants";
 
@@ -14,6 +14,21 @@ const TIER_ICONS: Record<string, string> = {
   silver: "\u{1FA99}",
   bronze: "\u{1F949}",
   unranked: "\u{2796}",
+};
+
+const CHAINS = [
+  { slug: "", label: "All Chains" },
+  { slug: "avalanche", label: "Avalanche" },
+  { slug: "ethereum", label: "Ethereum" },
+  { slug: "base", label: "Base" },
+  { slug: "solana", label: "Solana" },
+];
+
+const CHAIN_COLORS: Record<string, string> = {
+  avalanche: "text-red-400",
+  ethereum: "text-blue-400",
+  base: "text-blue-300",
+  solana: "text-purple-400",
 };
 
 const CATEGORIES = [
@@ -51,6 +66,7 @@ export default function LeaderboardPage() {
   const [stats, setStats] = useState<NetworkStats | null>(null);
   const [loading, setLoading] = useState(true);
   const [category, setCategory] = useState("");
+  const [chain, setChain] = useState("");
   const [error, setError] = useState("");
 
   useEffect(() => {
@@ -64,6 +80,7 @@ export default function LeaderboardPage() {
     setLoading(true);
     const params = new URLSearchParams({ limit: "50" });
     if (category) params.set("category", category);
+    if (chain) params.set("chain", chain);
 
     fetch(`${API}/api/v1/agents/top?${params}`)
       .then((r) => {
@@ -78,7 +95,7 @@ export default function LeaderboardPage() {
       })
       .catch(() => setError("Failed to load"))
       .finally(() => setLoading(false));
-  }, [category]);
+  }, [category, chain]);
 
   return (
     <div className="max-w-5xl mx-auto px-4 py-12">
@@ -135,6 +152,32 @@ export default function LeaderboardPage() {
           </div>
         </div>
       )}
+
+      {/* Chain filters */}
+      <div className="flex items-center gap-2 mb-3 flex-wrap">
+        <Globe className="w-4 h-4 text-muted-3" />
+        {CHAINS.map((c) => {
+          const count = stats?.chain_distribution?.[c.slug] || 0;
+          return (
+            <button
+              key={c.slug}
+              onClick={() => setChain(c.slug)}
+              className={`text-xs px-3 py-1.5 rounded-lg font-mono transition-colors flex items-center gap-1.5 ${
+                chain === c.slug
+                  ? "bg-primary text-white"
+                  : "bg-surface border border-surface-2 text-muted hover:text-white hover:border-primary/30"
+              }`}
+            >
+              {c.label}
+              {c.slug && count > 0 && (
+                <span className={`text-[10px] ${chain === c.slug ? "text-white/70" : "text-muted-3"}`}>
+                  {count.toLocaleString()}
+                </span>
+              )}
+            </button>
+          );
+        })}
+      </div>
 
       {/* Category filters */}
       <div className="flex items-center gap-2 mb-6 flex-wrap">
@@ -209,8 +252,11 @@ export default function LeaderboardPage() {
                     <div className="font-semibold text-white text-sm">
                       {agent.name || `Agent #${agent.agent_id}`}
                     </div>
-                    <div className="text-xs text-muted-3 font-mono">
+                    <div className="text-xs text-muted-3 font-mono flex items-center gap-1.5">
                       #{agent.agent_id}
+                      <span className={`capitalize ${CHAIN_COLORS[agent.chain] || "text-muted-3"}`}>
+                        {agent.chain}
+                      </span>
                     </div>
                   </td>
                   <td className="px-4 py-3 hidden md:table-cell">
