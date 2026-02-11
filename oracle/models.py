@@ -80,6 +80,8 @@ class NetworkStats(BaseModel):
     total_agents: int = 0
     avg_score: float = 0.0
     tier_distribution: dict[str, int] = {}
+    category_counts: dict[str, int] = {}
+    protocol_counts: dict[str, int] = {}
     total_feedback: int = 0
     total_screenings: int = 0
     total_payments: int = 0

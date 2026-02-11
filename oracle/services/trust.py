@@ -372,12 +372,14 @@ class TrustService:
 
         all_scores: list[float] = []
         tier_dist: dict[str, int] = {}
+        cat_counts: dict[str, int] = {}
+        proto_counts: dict[str, int] = {}
         page_size = 1000
         offset = 0
         while True:
             batch = (
                 db.table("agents")
-                .select("composite_score, tier")
+                .select("composite_score, tier, category, agent_uri")
                 .range(offset, offset + page_size - 1)
                 .execute()
             )
@@ -388,6 +390,24 @@ class TrustService:
                 all_scores.append(score)
                 t = a.get("tier", "unranked")
                 tier_dist[t] = tier_dist.get(t, 0) + 1
+                cat = a.get("category") or "general"
+                cat_counts[cat] = cat_counts.get(cat, 0) + 1
+                # Count protocols from base64 metadata
+                proto_counts["https"] = proto_counts.get("https", 0) + 1
+                uri = a.get("agent_uri") or ""
+                if uri.startswith("data:application/json;base64,"):
+                    try:
+                        import json, base64
+                        b64 = uri.split(",", 1)[1]
+                        meta = json.loads(base64.b64decode(b64 + "=="))
+                        if meta.get("x402Support") or meta.get("x402support"):
+                            proto_counts["x402"] = proto_counts.get("x402", 0) + 1
+                        if meta.get("8004Support"):
+                            proto_counts["8004"] = proto_counts.get("8004", 0) + 1
+                        if meta.get("a2aSupport"):
+                            proto_counts["a2a"] = proto_counts.get("a2a", 0) + 1
+                    except Exception:
+                        pass
             if len(batch.data) < page_size:
                 break
             offset += page_size
@@ -416,6 +436,8 @@ class TrustService:
             total_agents=total_agents,
             avg_score=avg_score,
             tier_distribution=tier_dist,
+            category_counts=cat_counts,
+            protocol_counts=proto_counts,
             total_feedback=total_feedback,
             total_screenings=total_screenings,
             total_payments=total_payments,

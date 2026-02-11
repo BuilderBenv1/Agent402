@@ -10,6 +10,8 @@ export interface NetworkStats {
   total_agents: number;
   avg_score: number;
   tier_distribution: Record<string, number>;
+  category_counts: Record<string, number>;
+  protocol_counts: Record<string, number>;
   total_feedback: number;
   total_screenings: number;
   total_payments: number;

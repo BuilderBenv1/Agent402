@@ -159,6 +159,92 @@ export default function Home() {
         />
       </section>
 
+      {/* Protocol Stats */}
+      {stats?.protocol_counts && Object.keys(stats.protocol_counts).length > 0 && (
+        <section className="mb-16">
+          <h2 className="font-sans text-lg font-bold text-white mb-4 text-center uppercase tracking-wider">
+            Protocol Coverage
+          </h2>
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+            {[
+              { key: "https", label: "HTTPS", color: "text-primary" },
+              { key: "x402", label: "x402", color: "text-success" },
+              { key: "8004", label: "ERC-8004", color: "text-violet-400" },
+              { key: "a2a", label: "A2A", color: "text-warning" },
+            ].map(({ key, label, color }) => {
+              const count = stats.protocol_counts[key] || 0;
+              const pct = stats.total_agents > 0 ? ((count / stats.total_agents) * 100).toFixed(1) : "0";
+              return (
+                <div key={key} className="bg-surface border border-surface-2 rounded-lg p-4 text-center">
+                  <div className={`text-xl font-bold ${color}`}>
+                    {count.toLocaleString()}
+                  </div>
+                  <div className="text-xs text-muted-2 mt-1 uppercase tracking-wider">{label}</div>
+                  <div className="mt-2 w-full bg-surface-2 rounded-full h-1.5">
+                    <div
+                      className={`h-1.5 rounded-full ${
+                        key === "https" ? "bg-primary" :
+                        key === "x402" ? "bg-success" :
+                        key === "8004" ? "bg-violet-500" : "bg-warning"
+                      }`}
+                      style={{ width: `${Math.min(100, parseFloat(pct))}%` }}
+                    />
+                  </div>
+                  <div className="text-[10px] text-muted-3 mt-1">{pct}% of agents</div>
+                </div>
+              );
+            })}
+          </div>
+        </section>
+      )}
+
+      {/* Tier Distribution */}
+      {stats?.tier_distribution && Object.keys(stats.tier_distribution).length > 0 && (
+        <section className="mb-16">
+          <h2 className="font-sans text-lg font-bold text-white mb-4 text-center uppercase tracking-wider">
+            Tier Distribution
+          </h2>
+          <div className="bg-surface border border-surface-2 rounded-xl p-5">
+            <div className="flex rounded-lg overflow-hidden h-6 mb-4">
+              {["diamond", "platinum", "gold", "silver", "bronze", "unranked"].map((tier) => {
+                const count = stats.tier_distribution[tier] || 0;
+                const pct = stats.total_agents > 0 ? (count / stats.total_agents) * 100 : 0;
+                if (pct === 0) return null;
+                const colors: Record<string, string> = {
+                  diamond: "bg-cyan-500", platinum: "bg-violet-500", gold: "bg-yellow-500",
+                  silver: "bg-gray-400", bronze: "bg-orange-500", unranked: "bg-gray-700",
+                };
+                return (
+                  <div
+                    key={tier}
+                    className={`${colors[tier]} transition-all`}
+                    style={{ width: `${pct}%` }}
+                    title={`${tier}: ${count.toLocaleString()} (${pct.toFixed(1)}%)`}
+                  />
+                );
+              })}
+            </div>
+            <div className="flex flex-wrap gap-4 justify-center text-xs">
+              {["diamond", "platinum", "gold", "silver", "bronze", "unranked"].map((tier) => {
+                const count = stats.tier_distribution[tier] || 0;
+                if (count === 0) return null;
+                const dotColors: Record<string, string> = {
+                  diamond: "bg-cyan-500", platinum: "bg-violet-500", gold: "bg-yellow-500",
+                  silver: "bg-gray-400", bronze: "bg-orange-500", unranked: "bg-gray-700",
+                };
+                return (
+                  <div key={tier} className="flex items-center gap-1.5">
+                    <div className={`w-2.5 h-2.5 rounded-full ${dotColors[tier]}`} />
+                    <span className="text-muted capitalize">{tier}</span>
+                    <span className="text-white font-mono">{count.toLocaleString()}</span>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        </section>
+      )}
+
       {/* How It Works */}
       <section className="mb-16">
         <h2 className="font-sans text-2xl font-bold text-white mb-8 text-center">
