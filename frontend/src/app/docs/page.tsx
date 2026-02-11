@@ -45,7 +45,7 @@ wallet = Account.from_key("0xYOUR_PRIVATE_KEY")
 client = httpx_client(wallet)
 
 # Query trust evaluation — x402 handles payment automatically
-resp = client.get("https://api.agent402.sh/api/v1/trust/42")
+resp = client.get("https://api.agent402.io/api/v1/trust/42")
 print(resp.json())
 # {
 #   "agent_id": 42,

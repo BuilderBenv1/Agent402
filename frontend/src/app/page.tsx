@@ -15,7 +15,7 @@ import {
 } from "lucide-react";
 import type { NetworkStats, PaymentStats } from "@/lib/api";
 
-const API = process.env.NEXT_PUBLIC_API_URL || "https://api.agent402.sh";
+const API = process.env.NEXT_PUBLIC_API_URL || "https://api.agent402.io";
 
 function StatCard({
   icon: Icon,
@@ -229,7 +229,7 @@ export default function Home() {
               <span className="text-muted">=</span>{" "}
               <span className="text-white">client.get</span>
               <span className="text-muted">(</span>
-              <span className="text-success">&quot;https://api.agent402.sh/api/v1/trust/42&quot;</span>
+              <span className="text-success">&quot;https://api.agent402.io/api/v1/trust/42&quot;</span>
               <span className="text-muted">)</span>
               {"\n\n"}
               <span className="text-primary">print</span>

@@ -182,7 +182,7 @@ footer{text-align:center;color:#444460;font-size:.75rem;padding:2rem 0 1rem}
 </section>
 
 <div class="links">
-<a href="https://agent402.sh">agent402.sh</a>
+<a href="https://agent402.io">agent402.io</a>
 <a href="/.well-known/agent.json">A2A Agent Card</a>
 <a href="/api/v1/pricing">Pricing API</a>
 <a href="https://www.x402.org/">x402 Protocol</a>

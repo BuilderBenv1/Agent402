@@ -5,7 +5,7 @@ import { Trophy, ArrowUpRight, Filter } from "lucide-react";
 import type { TrustedAgent } from "@/lib/api";
 import { getScoreColor, getTierColor } from "@/lib/constants";
 
-const API = process.env.NEXT_PUBLIC_API_URL || "https://api.agent402.sh";
+const API = process.env.NEXT_PUBLIC_API_URL || "https://api.agent402.io";
 
 const CATEGORIES = [
   { slug: "", label: "All" },

@@ -1,4 +1,4 @@
-const API_BASE = process.env.NEXT_PUBLIC_API_URL || "https://api.agent402.sh";
+const API_BASE = process.env.NEXT_PUBLIC_API_URL || "https://api.agent402.io";
 
 export async function fetchAPI<T>(path: string): Promise<T> {
   const res = await fetch(`${API_BASE}${path}`, { next: { revalidate: 30 } });

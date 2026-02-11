@@ -5,7 +5,7 @@ import { Search, Shield, AlertTriangle, CheckCircle, Info } from "lucide-react";
 import type { TrustEvaluation } from "@/lib/api";
 import { getScoreColor, getTierColor } from "@/lib/constants";
 
-const API = process.env.NEXT_PUBLIC_API_URL || "https://api.agent402.sh";
+const API = process.env.NEXT_PUBLIC_API_URL || "https://api.agent402.io";
 
 function ScoreBar({ label, value }: { label: string; value: number }) {
   return (
