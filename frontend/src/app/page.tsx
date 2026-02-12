@@ -256,7 +256,7 @@ export default function Home() {
               { key: "avalanche", label: "Avalanche", color: "text-red-400", bg: "bg-red-500" },
               { key: "ethereum", label: "Ethereum", color: "text-blue-400", bg: "bg-blue-500" },
               { key: "base", label: "Base", color: "text-blue-300", bg: "bg-blue-400" },
-              { key: "solana", label: "Solana", color: "text-purple-400", bg: "bg-purple-500" },
+              { key: "polygon", label: "Polygon", color: "text-purple-400", bg: "bg-purple-500" },
             ].map(({ key, label, color, bg }) => {
               const count = stats.chain_distribution[key] || 0;
               const pct = stats.total_agents > 0 ? ((count / stats.total_agents) * 100).toFixed(1) : "0";

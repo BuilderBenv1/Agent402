@@ -21,13 +21,14 @@ const CHAINS = [
   { slug: "avalanche", label: "Avalanche" },
   { slug: "ethereum", label: "Ethereum" },
   { slug: "base", label: "Base" },
-  { slug: "solana", label: "Solana" },
+  { slug: "polygon", label: "Polygon" },
 ];
 
 const CHAIN_COLORS: Record<string, string> = {
   avalanche: "text-red-400",
   ethereum: "text-blue-400",
   base: "text-blue-300",
+  polygon: "text-purple-400",
   solana: "text-purple-400",
 };
 

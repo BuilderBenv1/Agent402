@@ -201,7 +201,7 @@ def main():
     while True:
         query = (
             db.table("agents")
-            .select("agent_id, owner_address, agent_uri, name, description, category, registered_at, total_feedback, average_rating, composite_score, tier")
+            .select("agent_id, chain, owner_address, agent_uri, name, description, category, registered_at, total_feedback, average_rating, composite_score, tier")
             .order("agent_id")
         )
         if start_from > 0:
@@ -281,7 +281,7 @@ def main():
             }
             for attempt in range(3):
                 try:
-                    db.table("agents").update(update_data).eq("agent_id", aid).execute()
+                    db.table("agents").update(update_data).eq("agent_id", aid).eq("chain", agent["chain"]).execute()
                     break
                 except Exception as e:
                     if attempt < 2:
