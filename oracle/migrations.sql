@@ -6,7 +6,7 @@
 -- 1. Core agents table
 CREATE TABLE IF NOT EXISTS agents (
     id SERIAL PRIMARY KEY,
-    agent_id INTEGER UNIQUE NOT NULL,
+    agent_id INTEGER NOT NULL,
     owner_address TEXT NOT NULL,
     agent_uri TEXT NOT NULL,
     chain TEXT NOT NULL DEFAULT 'avalanche',
@@ -28,6 +28,7 @@ CREATE TABLE IF NOT EXISTS agents (
     last_verified_reachable BOOLEAN
 );
 
+ALTER TABLE agents ADD CONSTRAINT uq_agents_chain_agent_id UNIQUE (agent_id, chain);
 CREATE INDEX IF NOT EXISTS idx_agents_agent_id ON agents(agent_id);
 CREATE INDEX IF NOT EXISTS idx_agents_composite_score ON agents(composite_score DESC);
 CREATE INDEX IF NOT EXISTS idx_agents_category ON agents(category);
